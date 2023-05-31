@@ -151,8 +151,8 @@ cpdef integrate_context(double [:] c, double [:] c_in, double B, int [:] c_ind):
 <span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> rho</span>
 <span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> integrate_context(c, c_in, B, c_ind):</span>
-<span id="cb3-8"><a href="#cb3-8" aria-hidden="true" tabindex="-1"></a>    cdot <span class="op">=</span> <span class="dv">0</span></span>
-<span id="cb3-9"><a href="#cb3-9" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb3-8"><a href="#cb3-8" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb3-9"><a href="#cb3-9" aria-hidden="true" tabindex="-1"></a>    cdot <span class="op">=</span> <span class="dv">0</span></span>
 <span id="cb3-10"><a href="#cb3-10" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> i <span class="kw">in</span> <span class="bu">range</span>(c_ind[<span class="dv">0</span>], c_ind[<span class="dv">1</span>]):</span>
 <span id="cb3-11"><a href="#cb3-11" aria-hidden="true" tabindex="-1"></a>        cdot <span class="op">+=</span> c[i] <span class="op">*</span> c_in[i]</span>
 <span id="cb3-12"><a href="#cb3-12" aria-hidden="true" tabindex="-1"></a>    rho <span class="op">=</span> calc_rho(cdot, B)</span>
@@ -173,8 +173,8 @@ cpdef integrate_context(double [:] c, double [:] c_in, double B, int [:] c_ind):
 <span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb4-8"><a href="#cb4-8" aria-hidden="true" tabindex="-1"></a><span class="at">@njit</span></span>
 <span id="cb4-9"><a href="#cb4-9" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> numba_integrate_context(c, c_in, B, c_ind):</span>
-<span id="cb4-10"><a href="#cb4-10" aria-hidden="true" tabindex="-1"></a>    cdot <span class="op">=</span> <span class="dv">0</span></span>
-<span id="cb4-11"><a href="#cb4-11" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb4-10"><a href="#cb4-10" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb4-11"><a href="#cb4-11" aria-hidden="true" tabindex="-1"></a>    cdot <span class="op">=</span> <span class="dv">0</span></span>
 <span id="cb4-12"><a href="#cb4-12" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> i <span class="kw">in</span> <span class="bu">range</span>(c_ind[<span class="dv">0</span>], c_ind[<span class="dv">1</span>]):</span>
 <span id="cb4-13"><a href="#cb4-13" aria-hidden="true" tabindex="-1"></a>        cdot <span class="op">+=</span> c[i] <span class="op">*</span> c_in[i]</span>
 <span id="cb4-14"><a href="#cb4-14" aria-hidden="true" tabindex="-1"></a>    rho <span class="op">=</span> numba_calc_rho(cdot, B) <span class="co"># you can't mix numba with base python, so we use the numba version of calc_rho</span></span>
