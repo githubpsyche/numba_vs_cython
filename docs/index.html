@@ -112,15 +112,13 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <blockquote class="blockquote">
 <p>A basic comparison of Cython and Numba for speeding up operations central to simulation of the Context Maintenance and Retrieval (CMR) model</p>
 </blockquote>
-<p>An central selling point of <code>cymr</code> as an implementation of the Context Maintenance and Retrieval (CMR) model is that it uses Cython to accelerate model execution in comparison to a base Python implementation.</p>
-<p>However, there are some downsides to using Cython. The main downside is that Cython requires knowledge Cython-specific syntax and concepts to understand and use effectively. This can be a barrier for contributors and users who are not familiar with concepts associated with low-level programming languages or otherwise prefer to develop in regular Python. With libraries designed for model-based research, users are frequently interested in modifying the code to test new ideas or to adapt the model to their own research questions. In this case, the barrier to entry for Cython can be a significant drawback.</p>
-<p>Still, given the computational demands of fitting a model like CMR to data, the speedup provided by Cython is significant enough that it is worth it to use Cython for the core model code. In this notebook, we provide evidence that the speedup provided by Cython for key operations in <code>cymr</code> is substantial. But we also show that these gains can be obtained using a different approach: using Numba to compile applicable functions “just in time”. Numba translates Python functions to optimized machine code at runtime. Numba-compiled numerical algorithms in Python can approach the speeds of C or FORTRAN. The key advantage of Numba is that it does not require any special syntax or concepts to use, or require any extra compilation steps. Instead, as long as a function sticks to the subset of Python and NumPy that Numba supports, you can just apply one of the Numba decorators to your Python function, and Numba does the rest. This might provide a more accessible alternative to Cython for providing fast implementations of model code while keeping a codebase accessible to users without familiarity with Cython. Even for experienced Cython users, Numba might still provide an alternative approach to speeding up code that can be easier to use and maintain.</p>
-<p>In this demonstration, I focus on the the function <code>integrate_context</code> in <code>cymr</code>’s <code>operations.pyx</code>. It uses an additional hidden function <code>calc_rho</code> to integrate contextual input into a context vector. For each method, I perform a direct translation of the Cython code to regular Python. To confirm that these methods are faster in Cython than in Python, I compare the Cython implementations to a direct translation of the Cython code to Python. Next, to show how Numba can be used to provide a fast implementation of the same method, I apply the <code>@njit</code> decorator from Numba to the Python translation of the Cython code. Finally, I compare the speed of the Numba-compiled Python code to the Cython implementation. This speed comparison shows that the Numba-compiled Python code is even substantially faster than the Cython implementation, and that both are several times than the base Python implementation.</p>
-<p>A fuller comparison might convert the entire set of operations defined in <code>operations.pyx</code> to Numba-compiled Python code and then run corresponding tests defined already in the <code>cymr</code> test suite. Perhaps within more complex functions distributed across multiple files, the speedup provided by Cython might turn out to be more substantial – though I have no particular reason to expect this. However, these initial comparisons provide a proof of concept that Numba is a viable alternative to Cython for speeding up functions central to CMR that might motivate further exploration. I also hopefully show that these Numba makes fewer tradeoffs in terms of accessibility and ease of use than Cython.</p>
+<p>cymr, an implementation of the Context Maintenance and Retrieval (CMR) model, leverages Cython for faster execution compared to base Python. While Cython’s speedup is essential given CMR’s computational demands, its specialized syntax and concepts present a barrier for users or contributors unfamiliar with low-level programming languages or preferring regular Python.</p>
+<p>This notebook highlights the substantial speedup Cython offers for cymr operations. However, it also demonstrates an alternative method to achieve these gains using Numba, a tool that compiles Python functions “just in time” into optimized machine code. Unlike Cython, Numba doesn’t demand specialized syntax or additional compilation steps, making it more accessible to users with different skill levels. Even for experienced Cython users, Numba might be easier to use and maintain.</p>
+<p>The focus here is on the function <code>integrate_context</code> from <code>cymr</code>’s operations.pyx, with a direct comparison of Cython and Python versions, and the application of Numba’s <code>@njit</code> decorator to the Python translation. The results reveal that Numba-compiled Python code is substantially faster than both Cython and base Python versions, proving that Numba is a promising alternative to Cython for CMR. Thus, Numba can enhance speed while avoiding Cython’s accessibility challenges.</p>
 <section id="integrate_context" class="level2" data-number="1">
 <h2 data-number="1" class="anchored" data-anchor-id="integrate_context"><span class="header-section-number">1</span> <code>integrate_context</code></h2>
 <p>The function <code>integrate_context</code> in <code>operations.pyx</code> uses a hidden function <code>calc_rho</code> to integrate contextual input into a context vector. We import the module for experiments here, but also copy the underlying code here for reference.</p>
-<div class="cell" data-execution_count="1">
+<div class="cell" data-execution_count="15">
 <div class="sourceCode cell-code" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> operations <span class="im">import</span> integrate_context <span class="im">as</span> cython_integrate_context</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <section id="implementation-using-cython" class="level3" data-number="1.1">
@@ -177,7 +175,7 @@ cpdef integrate_context(double [:] c, double [:] c_in, double B, int [:] c_ind):
 <section id="implementation-using-base-numpy" class="level3" data-number="1.2">
 <h3 data-number="1.2" class="anchored" data-anchor-id="implementation-using-base-numpy"><span class="header-section-number">1.2</span> Implementation Using Base Numpy</h3>
 <p>Unlike in Cython, type annotations here are optional when it comes to getting a function going – both here, and even once we start using Numba. Type annotation is useful anyway, but in this case we exclude them to show off how little is required to prototype a function that runs as fast as the Cython version.</p>
-<div class="cell" data-execution_count="2">
+<div class="cell" data-execution_count="16">
 <div class="sourceCode cell-code" id="cb3"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> numpy <span class="im">as</span> np</span>
 <span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> calc_rho(cdot, B):</span>
@@ -197,7 +195,7 @@ cpdef integrate_context(double [:] c, double [:] c_in, double B, int [:] c_ind):
 </section>
 <section id="adding-numba-compilation" class="level3" data-number="1.3">
 <h3 data-number="1.3" class="anchored" data-anchor-id="adding-numba-compilation"><span class="header-section-number">1.3</span> Adding Numba Compilation</h3>
-<div class="cell" data-execution_count="3">
+<div class="cell" data-execution_count="17">
 <div class="sourceCode cell-code" id="cb4"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> numba <span class="im">import</span> njit</span>
 <span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a><span class="at">@njit</span></span>
@@ -220,7 +218,7 @@ cpdef integrate_context(double [:] c, double [:] c_in, double B, int [:] c_ind):
 <section id="speed-comparison" class="level3" data-number="1.4">
 <h3 data-number="1.4" class="anchored" data-anchor-id="speed-comparison"><span class="header-section-number">1.4</span> Speed Comparison</h3>
 <p>We run each function to confirm they work before our speed test, but also because the first run of a JIT-compiled function is necessarily slower than subsequent runs because of the compilation step. The cost of compilation step is negligible when the function is called many times, but it can be significant when the function is only called once. Even in this case, compilation results can be cached to ensure this cost is only paid once, similar to how Cython compiles code just once. We don’t do any demonstration of caching here, though. We use the <code>timeit</code> module to time each function call, allowing the module to configure the number of loops and repetitions to get a good estimate of the time required to run each function.</p>
-<div class="cell" data-execution_count="4">
+<div class="cell" data-execution_count="18">
 <div class="sourceCode cell-code" id="cb5"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>c1 <span class="op">=</span> np.array([<span class="fl">0.0</span>, <span class="fl">0.09128709</span>, <span class="fl">0.18257419</span>, <span class="fl">0.27386128</span>, <span class="fl">0.36514837</span>, <span class="fl">0.8660254</span>])</span>
 <span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>c2 <span class="op">=</span> np.array([<span class="fl">0.15655607</span>, <span class="fl">0.24875946</span>, <span class="fl">0.34096284</span>, <span class="fl">0.43316622</span>, <span class="fl">0.52536961</span>, <span class="fl">0.57767384</span>])</span>
 <span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a>B <span class="op">=</span> <span class="fl">0.5</span></span>
@@ -230,22 +228,22 @@ cpdef integrate_context(double [:] c, double [:] c_in, double B, int [:] c_ind):
 <span id="cb5-7"><a href="#cb5-7" aria-hidden="true" tabindex="-1"></a>cython_integrate_context(c1, c2, B, c_ind)</span>
 <span id="cb5-8"><a href="#cb5-8" aria-hidden="true" tabindex="-1"></a>numba_integrate_context(c1, c2, B, c_ind)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
-<div class="cell" data-execution_count="5">
+<div class="cell" data-execution_count="19">
 <div class="sourceCode cell-code" id="cb6"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="op">%</span>timeit integrate_context(c1, c2, B, c_ind)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>5.92 µs ± 213 ns per loop (mean ± std. dev. of 7 runs, 100,000 loops each)</code></pre>
+<pre><code>5.77 µs ± 185 ns per loop (mean ± std. dev. of 7 runs, 100,000 loops each)</code></pre>
 </div>
 </div>
-<div class="cell" data-execution_count="6">
+<div class="cell" data-execution_count="20">
 <div class="sourceCode cell-code" id="cb8"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="op">%</span>timeit cython_integrate_context(c1, c2, B, c_ind)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>1.02 µs ± 21.1 ns per loop (mean ± std. dev. of 7 runs, 1,000,000 loops each)</code></pre>
+<pre><code>992 ns ± 28.9 ns per loop (mean ± std. dev. of 7 runs, 1,000,000 loops each)</code></pre>
 </div>
 </div>
-<div class="cell" data-execution_count="7">
+<div class="cell" data-execution_count="21">
 <div class="sourceCode cell-code" id="cb10"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="op">%</span>timeit numba_integrate_context(c1, c2, B, c_ind)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>564 ns ± 12.2 ns per loop (mean ± std. dev. of 7 runs, 1,000,000 loops each)</code></pre>
+<pre><code>556 ns ± 14.2 ns per loop (mean ± std. dev. of 7 runs, 1,000,000 loops each)</code></pre>
 </div>
 </div>
 <p>This speed comparison shows that the Numba-compiled Python code is even significantly faster than the Cython implementation, and that both are several times than the base Python implementation. Outcomes like these are why I think Numba is worth considering as an alternative to Cython for speeding up most of the code we use to do much of our research.</p>
