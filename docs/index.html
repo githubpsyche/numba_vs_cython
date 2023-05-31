@@ -125,44 +125,12 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <h3 data-number="1.1" class="anchored" data-anchor-id="implementation-using-cython"><span class="header-section-number">1.1</span> Implementation Using Cython</h3>
 <pre class="cython"><code>@cython.profile(False)
 cdef inline double calc_rho(double cdot, double B):
-    """
-    Calculate context integration scaling factor.
-    
-    Parameters
-    ----------
-    cdot
-        Dot product between :math:`c` and :math:`c^{IN}`.
-    
-    B
-        Beta parameter weighting :math:`c^{IN}`.
-    
-    Returns
-    -------
-    rho
-        Scaling factor for :math:`c`.   
-    """
     rho = sqrt(1 + (B * B) * ((cdot * cdot) - 1)) - (B * cdot)
     return rho
 
 
 cpdef integrate_context(double [:] c, double [:] c_in, double B, int [:] c_ind):
-    """
-    Integrate context input.
-    
-    Parameters
-    ----------
-    c
-        Context state :math:`c`.
-    
-    c_in
-        Input to context :math:`c^{IN}`
-    
-    B
-        :math:`\beta` parameter weighting :math:`c`.
-    
-    c_ind
-        Start and end indices of context to update.
-    """
+
     cdef double cdot = 0
     cdef int i
     for i in range(c_ind[0], c_ind[1]):
